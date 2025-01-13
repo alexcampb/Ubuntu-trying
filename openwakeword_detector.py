@@ -27,7 +27,8 @@ download_models(["hey_jarvis"])
 print("Initializing model...")
 model = openwakeword.Model(
     wakeword_models=["hey_jarvis"],
-    inference_framework="onnx"
+    inference_framework="onnx",
+    enable_speex_noise_suppression=False  # Disable features that might depend on tflite
 )
 
 # Set up audio parameters
