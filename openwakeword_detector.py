@@ -8,7 +8,6 @@ import openwakeword
 import pyaudio
 import numpy as np
 import soundfile as sf
-from openwakeword.utils import download_models
 import logging
 import os
 from datetime import datetime
@@ -21,11 +20,11 @@ os.makedirs("debug_audio", exist_ok=True)
 
 # Download required models first
 print("Downloading models...")
-download_models(["hey_jarvis"])
+openwakeword.download_models(["hey_jarvis"])
 
 # Initialize wake word model with explicit ONNX model
 print("Initializing model...")
-model = openwakeword.Model(
+model = openwakeword.OpenWakeWord(
     wakeword_models=["hey_jarvis"],
     inference_framework="onnx"
 )
