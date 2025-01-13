@@ -27,7 +27,7 @@
     "googleapis": "^144.0.0",
     "node-fetch": "^2.7.0",
     "node-record-lpcm16": "^1.0.1",
-    "speaker": "^0.5.4",
+    "speaker-arm64": "^0.5.2",
     "ws": "^8.16.0"
   }
 }

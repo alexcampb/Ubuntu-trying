@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import Speaker from 'speaker';
+import Speaker from 'speaker-arm64';
 
 /**
  * Handles audio output functionality including speaker management and playback
