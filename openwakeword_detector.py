@@ -8,7 +8,6 @@ import openwakeword
 import pyaudio
 import numpy as np
 import soundfile as sf
-from openwakeword.utils import download_models
 import logging
 import os
 from datetime import datetime
@@ -19,16 +18,11 @@ logging.basicConfig(level=logging.INFO)
 # Create directory for audio samples
 os.makedirs("debug_audio", exist_ok=True)
 
-# Download required models first
-print("Downloading models...")
-download_models(["hey_jarvis"])
-
-# Initialize wake word model with explicit ONNX model
+# Initialize wake word model
 print("Initializing model...")
-model = openwakeword.Model(
-    wakeword_models=["hey_jarvis"],
-    inference_framework="onnx",
-    enable_speex_noise_suppression=False  # Disable features that might depend on tflite
+model = openwakeword.OpenWakeWord(
+    model_path=None,  # This will use the default models
+    inference_framework="onnx"
 )
 
 # Set up audio parameters
