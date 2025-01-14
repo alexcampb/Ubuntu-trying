@@ -7,7 +7,7 @@ This guide will walk you through setting up this project on Ubuntu.
 - Ubuntu 22.04 or later
 - Git
 - Node.js and npm
-- Python 3
+- Python 3.10
 
 ## Initial Setup
 
