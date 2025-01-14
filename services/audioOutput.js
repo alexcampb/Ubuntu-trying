@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import Speaker from 'node-speaker';
+import Speaker from 'speaker';
 
 /**
  * Handles audio output functionality including speaker management and playback
