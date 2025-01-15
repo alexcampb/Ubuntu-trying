@@ -11,6 +11,8 @@ import dotenv from 'dotenv';
 import WebSocket from 'ws';
 import fetch from 'node-fetch';
 import os from 'os';
+import fs from 'fs';
+import path from 'path';
 import { PushoverAPI } from './functions/pushover.js';
 import { WeatherAPI } from './functions/weather.js';
 import { SessionManager } from './services/session.js';
@@ -40,12 +42,34 @@ class ConsoleChat {
     this.responseId = null;
     this.currentFunctionArgs = '';
     this.currentConversationId = null;
+    this.currentUserTranscript = '';
+    this.currentAssistantTranscript = '';
 
     // Initialize the AudioHandler, passing this instance
     this.audioHandler = new AudioHandler(this);
 
     // Initialize the FunctionHandler, also passing this instance
     this.functionHandler = new FunctionHandler(this);
+
+    // Create transcripts directory if it doesn't exist
+    const transcriptsDir = path.join(process.cwd(), 'transcripts');
+    if (!fs.existsSync(transcriptsDir)) {
+      fs.mkdirSync(transcriptsDir);
+    }
+
+    // Use a single transcript file
+    this.transcriptFile = path.join(transcriptsDir, 'conversation_history.txt');
+
+    // Add a session separator when starting a new session
+    const sessionStart = `\n${'-'.repeat(50)}\n[${new Date().toISOString()}] New Session Started\n${'-'.repeat(50)}\n`;
+    fs.appendFileSync(this.transcriptFile, sessionStart);
+  }
+
+  // Add function to log transcripts
+  logTranscript(role, text) {
+    const timestamp = new Date().toISOString();
+    const entry = `[${timestamp}] ${role}: ${text}\n`;
+    fs.appendFileSync(this.transcriptFile, entry);
   }
 
   handleMessage(data) {
@@ -56,6 +80,10 @@ class ConsoleChat {
       switch (message.type) {
         case 'session.created':
           console.log('Session created successfully');
+          break;
+
+        case 'session.updated':
+          console.log('Session updated successfully');
           break;
 
         case 'input_audio_buffer.speech_started':
@@ -73,9 +101,11 @@ class ConsoleChat {
 
         case 'conversation.item.created':
           if (message.item?.content?.[0]?.text &&
-              !this.currentTranscript?.includes(message.item.content[0].text)) {
-            this.currentTranscript = message.item.content[0].text;
-            console.log('\nTranscribed input:', this.currentTranscript);
+              !this.currentUserTranscript?.includes(message.item.content[0].text)) {
+            this.currentUserTranscript = message.item.content[0].text;
+            console.log('\nTranscribed input:', this.currentUserTranscript);
+            // Log user input
+            this.logTranscript('User', this.currentUserTranscript);
             if (message.conversation_id) {
               this.currentConversationId = message.conversation_id;
             }
@@ -85,6 +115,15 @@ class ConsoleChat {
             console.log('\nFunction call output received, waiting for assistant response...');
             this.isWaitingForResponse = true;
             this.responseId = null;
+          }
+          break;
+
+        case 'conversation.item.input_audio_transcription.completed':
+          console.log('Input transcription message:', JSON.stringify(message, null, 2));
+          if (message.transcript && !this.currentUserTranscript?.includes(message.transcript)) {
+            this.currentUserTranscript = message.transcript;
+            console.log('\nUser transcript:', this.currentUserTranscript);
+            this.logTranscript('User', this.currentUserTranscript);
           }
           break;
 
@@ -116,6 +155,20 @@ class ConsoleChat {
           }
           break;
 
+        case 'response.audio_transcript.delta':
+          if (message.delta) {
+            this.currentAssistantTranscript = (this.currentAssistantTranscript || '') + message.delta;
+          }
+          break;
+
+        case 'response.audio_transcript.done':
+          if (this.currentAssistantTranscript) {
+            console.log('\nAssistant transcript:', this.currentAssistantTranscript);
+            this.logTranscript('Assistant', this.currentAssistantTranscript);
+            this.currentAssistantTranscript = '';
+          }
+          break;
+
         case 'response.done':
           if (this.responseId === message.response_id) {
             console.log('\n--- Response complete ---');
@@ -132,7 +185,7 @@ class ConsoleChat {
         case 'conversation.done':
           if (this.currentConversationId === message.conversation_id) {
             this.currentConversationId = null;
-            this.currentTranscript = '';
+            this.currentUserTranscript = '';
             this.audioHandler.isProcessingAudio = false;
           }
           break;
@@ -140,12 +193,14 @@ class ConsoleChat {
         case 'response.content_part.added':
           if (message.content_part?.content?.text) {
             console.log('\nAssistant:', message.content_part.content.text);
+            this.logTranscript('Assistant', message.content_part.content.text);
           }
           break;
 
         case 'response.output_item.added':
           if (message.output_item?.content_part?.content?.text) {
             console.log('\nAssistant:', message.output_item.content_part.content.text);
+            this.logTranscript('Assistant', message.output_item.content_part.content.text);
           }
           break;
 
@@ -208,7 +263,7 @@ class ConsoleChat {
       if (!this.ws) {
         console.log('Creating session...');
         const session = await this.sessionManager.createSession();
-        console.log('Session created successfully:', session);
+        console.log('Session created successfully:', JSON.stringify(session, null, 2));
 
         // Initialize WebSocket with the session
         await this.initializeWebSocket(session);
@@ -237,6 +292,17 @@ class ConsoleChat {
 
       this.ws.on('open', () => {
         console.log('\nConnected to OpenAI');
+        
+        // Send input_audio_transcription configuration
+        this.ws.send(JSON.stringify({
+          type: 'session.update',
+          session: {
+            input_audio_transcription: {
+              model: 'whisper-1'
+            }
+          }
+        }));
+        
         console.log('Press R to start/stop recording');
         console.log('Press X to toggle continuous conversation mode');
         console.log('Press I to interrupt playback');
