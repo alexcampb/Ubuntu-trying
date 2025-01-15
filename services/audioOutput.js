@@ -39,16 +39,19 @@ export class AudioOutput {
           channels: 1,
           bitDepth: 16,
           sampleRate: 24000,
-          highWaterMark: 1024 * 256,  // Increased from 128KB to 256KB
-          lowWaterMark: 1024 * 64,    // Increased from 32KB to 64KB
-          deviceId: 'default',         // Explicitly use default device
-          format: 'S16LE',            // Explicit format for better compatibility
-          signed: true                // Ensure signed audio data
+          highWaterMark: 1024 * 512,  // Increased buffer size
+          lowWaterMark: 1024 * 128,   // Increased minimum buffer threshold
+          deviceId: 'default',
+          format: 'S16LE',
+          signed: true
         });
 
         this.speaker.on('error', (err) => {
+          if (err.message.includes('buffer underflow')) {
+            // Ignore buffer underflow warnings
+            return;
+          }
           const ignoredErrors = [
-            'buffer underflow',
             'write after end',
             'not running',
             "Didn't have any audio data in callback (buffer underflow)"
