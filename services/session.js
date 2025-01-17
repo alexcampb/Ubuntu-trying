@@ -81,9 +81,9 @@ export class SessionManager {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "gpt-4o-realtime-preview-2024-12-17",
+          model: "gpt-4o-mini-realtime-preview-2024-12-17",
           temperature: 0.8,
-          max_response_output_tokens: 4096,
+          max_response_output_tokens: 500,
           modalities: ["audio", "text"],
           voice: "ash",
           input_audio_format: "pcm16",

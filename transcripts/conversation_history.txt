@@ -1,0 +1,175 @@
+
+--------------------------------------------------
+[2025-01-15T05:53:37.154Z] New Session Started
+--------------------------------------------------
+[2025-01-15T05:54:31.781Z] User: What's the weather like?
+
+[2025-01-15T05:54:33.558Z] Jarvis: It's 9:54 PM.
+[2025-01-15T05:55:34.181Z] Jarvis: It's 9:54 PM. Anything else I can help you with?
+
+--------------------------------------------------
+[2025-01-15T05:57:12.487Z] New Session Started
+--------------------------------------------------
+[2025-01-15T05:58:14.073Z] Jarvis: I'm here to chat and keep you company! What's on your mind today? Anything interesting you'd like to talk about?
+[2025-01-15T05:58:14.445Z] User: And that, and that's what's up.
+
+
+--------------------------------------------------
+[2025-01-15T06:26:54.477Z] New Session Started
+--------------------------------------------------
+[2025-01-15T06:27:17.732Z] User: What's the weather like in New York?
+
+[2025-01-15T06:27:19.635Z] Assistant: The current weather in New York is 24°F with clear skies, a humidity of 53%, and a wind speed of 16 mph.
+[2025-01-15T06:27:33.033Z] User: the conversation.
+
+[2025-01-15T06:27:33.352Z] Assistant: Continuous mode has been disabled.
+[2025-01-15T06:27:45.363Z] User: I said let's start a conversation.
+
+[2025-01-15T06:27:46.452Z] Assistant: Continuous mode is now enabled. This means I'll automatically start listening after each response.
+[2025-01-15T06:27:56.710Z] Assistant: I'm glad you think so! Let's keep the conversation going. What would you like to chat about next?
+[2025-01-15T06:27:57.232Z] User: That's fantastic, Jarvis.
+
+[2025-01-15T06:28:08.138Z] User: I'd like to chat about positively nothing.
+
+[2025-01-15T06:28:10.356Z] Assistant: That sounds like a great topic! Positivity can have a big impact on your mindset and overall well-being. Focusing on the positive aspects of life, practicing gratitude, and surrounding yourself with supportive people can help improve your mood and resilience. Is there a specific part of positivity you're interested in, like positive thinking, mindfulness, or positive habits?
+[2025-01-15T06:28:57.979Z] User: But I just cannot.
+
+[2025-01-15T06:29:00.111Z] Assistant: That's a wonderful choice! Practicing gratitude can really help shift your focus towards the positive aspects of life, fostering a sense of contentment and joy. You might try keeping a gratitude journal, where you write down a few things you're thankful for each day. This simple practice can help you recognize and appreciate the positive moments in your life. What are some things you're grateful
+[2025-01-15T06:30:00.295Z] User: Hey Jarvis, I don't really care about any of this.
+
+[2025-01-15T06:30:00.756Z] Assistant: That's okay! Everyone has different interests and things they care about. If there's something else you'd like to discuss or learn about, just let me know. I'm here to help with whatever you're interested in!
+[2025-01-15T06:30:14.659Z] User: Carried in
+
+[2025-01-15T06:30:15.315Z] Assistant: Of course! I'm here to help you with anything you need or answer any questions you have. What would you like to talk about or do next?
+[2025-01-15T06:30:32.981Z] User: What do you know about being really good at Valorant?
+
+[2025-01-15T06:30:33.091Z] Assistant: Being good at something often involves a combination of practice, dedication, and a willingness to learn and improve. Here are a few key points that can help you excel at something:
+
+1. **Consistent Practice**: Regular practice helps you hone your skills and build confidence. The more you practice, the better you become.
+
+2. **Learning and Feedback**: Continuously seek
+[2025-01-15T06:31:00.160Z] User: What about something like Valorant specific?
+
+[2025-01-15T06:31:02.475Z] Assistant: Valuing your time is essential for maintaining productivity and ensuring a balanced life. Here are some ways to value and manage your time effectively:
+
+1. **Prioritize Tasks**: Identify what's most important and tackle those tasks first. This ensures that you're making progress on the things that matter most.
+
+2. **Set Boundaries**: Protect your time by setting boundaries around your
+[2025-01-15T06:31:26.270Z] User: I said Valerian, did I say that right?
+
+[2025-01-15T06:31:28.834Z] Assistant: Valuing your time means recognizing its importance and making conscious choices about how you spend it. Here are a few ways to truly value your time:
+
+1. **Set Clear Priorities**: Focus on what truly matters to you and allocate your time to activities that align with your values and goals.
+
+2. **Avoid Procrastination**: Take action on tasks in a timely
+[2025-01-15T06:31:58.687Z] User: I want you to talk about the video game Valorant, Jarvis. You're just talking about, like, valuing time, something I do not care about right now.
+
+[2025-01-15T06:32:00.954Z] Assistant: Got it! If you're interested in discussing Valorant, we can definitely talk about that. Valorant is a popular tactical shooter game developed by Riot Games. It's known for its combination of precise gunplay and unique agent abilities. Is there something specific about Valorant you'd like to discuss, such as strategies, favorite agents, or game updates?
+
+--------------------------------------------------
+[2025-01-15T06:32:32.792Z] New Session Started
+--------------------------------------------------
+[2025-01-15T06:32:56.939Z] User: How do I become good at the video game Valorant? Give me specific examples.
+
+[2025-01-15T06:33:05.065Z] Assistant: Getting good at Valorant requires a mix of practice, strategy, and understanding the game mechanics. Here's a specific example to guide you:
+
+1. **Master the Basics:**
+   - **Shooting Range:** Spend time in the shooting range to get comfortable with aiming and recoil patterns of different guns.
+
+2. **Learn the Maps:**
+   - **Map Knowledge:** Understanding the layout, common hiding spots, and key choke points is crucial. Spend time in each map to learn these areas.
+
+3. **Agent Abilities:**
+   - **Specialize in a Few Agents:** Pick a couple of agents and master their abilities. Knowing when and how to use your abilities can turn the tide of a match.
+
+4. **Team Communication:**
+   - **Use Voice Chat:** Call out enemy positions, share strategies, and work with your team to coordinate attacks or defenses.
+
+5. **Analyze Your Gameplay:**
+   - **Watch and Learn:** Review your matches to understand what you did well and what mistakes you made. Learn from both your successes and failures.
+
+By focusing on these areas and practicing regularly, you'll see improvements in your gameplay. Good luck, and have fun!
+
+--------------------------------------------------
+[2025-01-16T03:34:46.858Z] New Session Started
+--------------------------------------------------
+[2025-01-16T03:34:56.214Z] Assistant: Would you like the weather forecast for San Francisco, or is there another location you're interested in?
+[2025-01-16T03:34:56.802Z] User: What's the weather like today?
+
+[2025-01-16T03:35:09.444Z] User: San Francisco.
+
+[2025-01-16T03:35:12.028Z] Assistant: In San Francisco, it's currently 53°F with clear skies, 63% humidity, and a wind speed of 2 mph. Lovely weather for a stroll, wouldn't you say?
+[2025-01-16T03:35:37.703Z] User: turn off the family room lights and then turn on the master bedroom lights and the living room lights.
+
+[2025-01-16T03:35:40.779Z] Assistant: The lights in the Family Room have been turned off. The lights in the Master Bedroom and Living Room are now on.
+[2025-01-16T03:36:31.890Z] User: Turn off music in the family room.
+
+[2025-01-16T03:36:32.464Z] Assistant: It seems there is no music playing in the Family Room. Would you like me to do anything else?
+[2025-01-16T03:36:46.332Z] Assistant: I'll turn off the music in the Family Room now.
+[2025-01-16T03:36:46.342Z] User: There is music playing in the family room, please turn it off.
+
+[2025-01-16T03:36:56.882Z] User: What happened?
+
+[2025-01-16T03:36:58.022Z] Assistant: Music is now playing in the Family Room. Enjoy the tunes!
+[2025-01-16T03:37:11.219Z] User: Turn off the music.
+
+[2025-01-16T03:37:12.882Z] Assistant: I've turned down the volume in the Family Room. Anything else I can do for you?
+[2025-01-16T03:37:27.860Z] User: Turn down the volume 15 times.
+
+[2025-01-16T03:37:28.105Z] Assistant: I'll turn down the volume in the Family Room fifteen times for you.
+[2025-01-16T03:37:45.563Z] Assistant: I have successfully turned the volume down in the Family Room.
+
+--------------------------------------------------
+[2025-01-16T03:40:12.556Z] New Session Started
+--------------------------------------------------
+[2025-01-16T03:40:19.403Z] User: Turn on the family room lights.
+
+[2025-01-16T03:40:20.418Z] Assistant: The lights in the Family Room are on.
+
+--------------------------------------------------
+[2025-01-16T05:33:35.107Z] New Session Started
+--------------------------------------------------
+[2025-01-16T05:33:46.275Z] User: What is contract-based grading?
+
+[2025-01-16T05:33:55.511Z] Assistant: Contract-based programming is a software development approach where software designers define formal, precise, and verifiable specifications for software components, known as "contracts." These contracts typically include three main elements:
+
+1. **Preconditions:** Conditions that must be true before a function or method is executed.
+
+2. **Postconditions:** Conditions that must be true after a function or method has been executed.
+
+3. **Invariants:** Conditions that must always be true during the lifetime of an object or throughout the execution of a program.
+
+By enforcing these contracts, developers can ensure that software components interact with each other reliably, leading to more robust and maintainable code. It also helps in identifying and preventing bugs, as the contracts serve as a form of documentation and self-checking mechanism.
+
+--------------------------------------------------
+[2025-01-16T05:34:17.464Z] New Session Started
+--------------------------------------------------
+[2025-01-16T05:34:36.034Z] User: I'm taking a class and on the syllabus it says we're doing contract-based grading in a class. Eddie, please tell me what this means.
+
+[2025-01-16T05:34:44.919Z] Assistant: Contract-based grading is an innovative approach to assessment where students and instructors agree upon a set of expectations or 'contracts' at the beginning of the course. These contracts lay out the criteria for earning specific grades, detailing the tasks, assignments, and levels of performance required.
+
+Instead of traditional grading, which often focuses on points and percentages, contract-based grading emphasizes the process and efforts students put into their work. It encourages a more collaborative relationship between students and instructors, focusing on learning outcomes and personal growth.
+
+This method can reduce stress and competition, as students know exactly what's expected to achieve their desired grade. It also promotes self-reflection and accountability, as students take ownership of their learning journey.
+
+How does that sound for your class? Intrigued or terrified?
+[2025-01-16T05:35:49.933Z] User: I think that's bullshit. Give me a counter-argument.
+
+[2025-01-16T05:35:59.466Z] Assistant: Alright, let's break it down: Traditional grading methods, like points and letter grades, can sometimes create unnecessary pressure and competition among students. It can lead to a focus on grades rather than learning, and may not take into account individual learning styles or personal growth.
+
+Contract-based grading, on the other hand, offers a more flexible and personalized approach. It encourages students to engage with the material in a way that suits them and focuses on meeting clear, predefined objectives. It's all about collaboration and understanding, rather than competition and comparison.
+
+Sure, it might seem a bit unconventional, but it could lead to a more meaningful and engaging learning experience. Who knows, you might end up enjoying it! 
+
+--------------------------------------------------
+[2025-01-17T04:26:10.113Z] New Session Started
+--------------------------------------------------
+[2025-01-17T04:26:48.794Z] User: Turn off the lights in the master bedroom, please.
+
+[2025-01-17T04:26:49.863Z] Assistant: The lights in the Master Bedroom are on.
+[2025-01-17T04:27:06.499Z] User: I said turn off the lights in the master bedroom, please.
+
+[2025-01-17T04:27:07.373Z] Assistant: The lights in the Master Bedroom are off.
+[2025-01-17T04:27:34.353Z] Assistant: The lights in the Living Room are off.
+[2025-01-17T04:27:36.747Z] User: Turn off the living room lights.
+
