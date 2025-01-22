@@ -10,7 +10,12 @@ export const audioSettings = {
   bitDepth: 16,
   device: os.platform() === 'linux' ? 'pulse' : 'default',
   encoding: os.platform() === 'linux' ? 'signed-integer' : undefined,
-  format: 'raw'
+  format: 'raw',
+  agcConfig: {
+    enabled: true,
+    targetRMS: 0.2,         // Target RMS level (20%)
+    noiseFloor: 0.001      // Minimum level to consider as signal
+  }
 };
 
 /**
@@ -33,6 +38,13 @@ export class AudioInput {
     this.lastDetectionTime = 0;
     this.detectionCooldown = 2000; // 2 seconds cooldown
     this.isWakeWordReady = false;
+
+    // AGC state
+    this.targetLevel = audioSettings.agcConfig.targetRMS;
+    this.rmsHistory = new Float32Array(3);  // Short history for faster response
+    this.rmsIndex = 0;
+    this.peakLevel = 0;
+    this.lastLogTime = null; // Added for diagnostic logging
   }
 
   /**
@@ -150,12 +162,58 @@ export class AudioInput {
 
       this.recording.stream().on('data', (chunk) => {
         if (this.handler.chat.ws && this.handler.chat.ws.readyState === 1) {
-          this.audioBuffer = Buffer.concat([this.audioBuffer, chunk]);
+          // Calculate input level
+          const inputRMS = this.calculateRMS(chunk);
+          
+          // Store original chunk for comparison
+          const originalChunk = Buffer.from(chunk);
+          
+          // Apply automatic gain control
+          const normalizedChunk = audioSettings.agcConfig.enabled ? 
+            this.applyAGC(chunk) : chunk;
+          
+          // Verify output level
+          const outputRMS = this.calculateRMS(normalizedChunk);
+          
+          // Verify chunks are different (normalization happened)
+          const isDifferent = Buffer.compare(originalChunk, normalizedChunk) !== 0;
+          
+          // Log levels every second (avoid console spam)
+          const now = Date.now();
+          if (!this.lastLogTime || now - this.lastLogTime >= 1000) {
+            console.log(`
+Audio Pipeline Status:
+---------------------
+Input Level:     ${(inputRMS * 100).toFixed(1)}%
+Output Level:    ${(outputRMS * 100).toFixed(1)}%
+Target Level:    ${(this.targetLevel * 100).toFixed(1)}%
+AGC Enabled:     ${audioSettings.agcConfig.enabled}
+Normalized:      ${isDifferent ? 'Yes ' : 'No !'}
+Buffer Size:     ${chunk.length} bytes
+Sending Status:  ${this.handler.chat.ws.readyState === 1 ? 'Connected ' : 'Not Connected !'}
+`);
+            this.lastLogTime = now;
+          }
+            
+          // Add normalized audio to buffer
+          this.audioBuffer = Buffer.concat([this.audioBuffer, normalizedChunk]);
+          
+          // When buffer is full, send to server
           if (this.audioBuffer.length >= audioSettings.sampleRate) {
+            // Verify final buffer is normalized
+            const finalRMS = this.calculateRMS(this.audioBuffer);
+            const isNormalized = Math.abs(finalRMS - this.targetLevel) <= 0.01;
+            
+            if (!isNormalized) {
+              console.warn(`Warning: Audio buffer not properly normalized! Level: ${(finalRMS * 100).toFixed(1)}% vs Target: ${(this.targetLevel * 100).toFixed(1)}%`);
+            }
+            
+            // Send to server
             this.handler.chat.ws.send(JSON.stringify({
               type: 'input_audio_buffer.append',
               audio: this.audioBuffer.toString('base64')
             }));
+            
             this.audioBuffer = Buffer.alloc(0);
           }
         }
@@ -238,5 +296,90 @@ export class AudioInput {
     }
 
     this.isListeningForWakeWord = true;
+  }
+
+  /**
+   * Calculate RMS (Root Mean Square) value of audio buffer
+   * @private
+   * @param {Buffer} buffer - Input audio buffer
+   * @returns {number} RMS value between 0.0 and 1.0
+   */
+  calculateRMS(buffer) {
+    let sumSquares = 0;
+    let peak = 0;
+    const samples = buffer.length / 2; // 16-bit samples
+    
+    for (let i = 0; i < buffer.length; i += 2) {
+      const sample = buffer.readInt16LE(i) / 32768.0; // Convert to -1 to 1 range
+      sumSquares += sample * sample;
+      peak = Math.max(peak, Math.abs(sample));
+    }
+    
+    this.peakLevel = Math.max(peak, this.peakLevel * 0.95);
+    return Math.sqrt(sumSquares / samples);
+  }
+
+  /**
+   * Normalize audio buffer to exact target level
+   * @private
+   * @param {Buffer} buffer - Input audio buffer
+   * @param {number} inputRMS - Current RMS level
+   * @returns {Buffer} Normalized audio buffer
+   */
+  normalizeBuffer(buffer, inputRMS) {
+    // If input is too low, return silence
+    if (inputRMS <= audioSettings.agcConfig.noiseFloor) {
+      return Buffer.alloc(buffer.length);
+    }
+
+    const outputBuffer = Buffer.alloc(buffer.length);
+    
+    // Calculate exact scaling needed to reach target
+    const scaleFactor = this.targetLevel / inputRMS;
+    
+    // Apply scaling to each sample
+    for (let i = 0; i < buffer.length; i += 2) {
+      const sample = buffer.readInt16LE(i) / 32768.0; // Convert to -1 to 1
+      const normalized = sample * scaleFactor; // Scale to target
+      // Convert back to 16-bit and clamp
+      const intSample = Math.max(-32768, Math.min(32767, 
+        Math.round(normalized * 32768)));
+      outputBuffer.writeInt16LE(intSample, i);
+    }
+    
+    // Verify output RMS and apply correction if needed
+    const outputRMS = this.calculateRMS(outputBuffer);
+    if (Math.abs(outputRMS - this.targetLevel) > 0.0001) {
+      // Apply fine adjustment if needed
+      const correction = this.targetLevel / outputRMS;
+      for (let i = 0; i < buffer.length; i += 2) {
+        const sample = outputBuffer.readInt16LE(i);
+        const corrected = Math.max(-32768, Math.min(32767,
+          Math.round(sample * correction)));
+        outputBuffer.writeInt16LE(corrected, i);
+      }
+    }
+    
+    return outputBuffer;
+  }
+
+  /**
+   * Apply Automatic Gain Control to audio buffer
+   * @private
+   * @param {Buffer} buffer - Input audio buffer
+   * @returns {Buffer} Normalized audio buffer
+   */
+  applyAGC(buffer) {
+    const currentRMS = this.calculateRMS(buffer);
+    
+    // Update RMS history
+    this.rmsHistory[this.rmsIndex] = currentRMS;
+    this.rmsIndex = (this.rmsIndex + 1) % this.rmsHistory.length;
+    
+    // Calculate average RMS
+    const avgRMS = this.rmsHistory.reduce((a, b) => a + b) / this.rmsHistory.length;
+    
+    // Normalize buffer to exact target level
+    return this.normalizeBuffer(buffer, avgRMS);
   }
 }

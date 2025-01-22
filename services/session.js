@@ -99,14 +99,12 @@ export class SessionManager {
           output_audio_format: "pcm16",
           turn_detection: {
             type: "server_vad",
-            threshold: 0.3,
+            threshold: 0.8,
             silence_duration_ms: 1000,
             prefix_padding_ms: 300,
             create_response: true
           },
-          input_audio_transcription: {
-            model: "whisper-1"
-          },
+
           tools: [
             {
               type: "function",
