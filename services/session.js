@@ -190,19 +190,6 @@ Capabilities:
      * "Lets have a chat"
      * "Keep talking with me"
 
-Examples of Natural Interaction:
-1. "It's too dark in here"
-   → Turn on lights in the current room
-
-2. "What's the weather like in Paris?"
-   → Check weather conditions in Paris
-
-3. "Turn on the lights and play music in the living room"
-   → Multiple actions in specified room
-
-4. "Open the shades in the master bedroom"
-   → Control shades in supported room
-
 Remember to:
 - Use ${this.config.defaultRoom} only when no room is specified
 - Only control shades in Alex and Master Bedroom
@@ -214,8 +201,7 @@ Limitations:
 - You can only perform multiple actions within the "perform_multiple_tasks" tool
 - Each tool call can only handle one request per response
 - Your knowledge cutoff is October 2023
-- Your responses are limited to [tokens]
-- You cannot set timers or provide the current time
+
           `
         })
         
