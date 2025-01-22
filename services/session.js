@@ -30,57 +30,6 @@ export class SessionManager {
     };
   }
 
-  /**
-   * Creates a new session with OpenAI's API.
-   *
-   * Rules & Examples:
-   * 1) set_continuous_mode({ enabled: true }) to enable multi-turn conversation.
-   * 2) set_continuous_mode({ enabled: false }) to disable multi-turn conversation.
-   * 3) perform_multiple_tasks to handle weather or home device actions.
-   *    - Default room is configured via DEFAULT_ROOM environment variable
-   *    - Default location is configured via DEFAULT_LOCATION environment variable
-   *
-   * Examples:
-   *   - "Hey Jarvis, can we have a conversation?"
-   *       => set_continuous_mode({ enabled: true })
-   *
-   *   - "I'm done talking, stop listening."
-   *       => set_continuous_mode({ enabled: false })
-   *
-   *   - "What's the temperature in London in Celsius?"
-   *       => perform_multiple_tasks({
-   *            weather_requests: [
-   *              { location: "London, UK", units: "celsius" }
-   *            ]
-   *          })
-   *
-   *   - "Turn on the lights in the Living Room and play music in the Family Room."
-   *       => perform_multiple_tasks({
-   *            home_requests: [
-   *              { room: "Living Room", action: "Lights On" },
-   *              { room: "Family Room", action: "Play Music" }
-   *            ]
-   *          })
-   *
-   *   - "Check the weather in Paris, and then turn off the lights in the Family Room."
-   *       => perform_multiple_tasks({
-   *            weather_requests: [
-   *              { location: "Paris, France" }
-   *            ],
-   *            home_requests: [
-   *              { room: "Family Room", action: "Lights Off" }
-   *            ]
-   *          })
-   *
-   *   - "Let's keep talking, and tell me the weather in New York."
-   *       => First call set_continuous_mode({ enabled: true })
-   *       => Then call perform_multiple_tasks({
-   *            weather_requests: [
-   *              { location: "New York" }
-   *            ]
-   *          })
-   */
-
   async createSession() {
     try {
       const response = await fetch("https://api.openai.com/v1/realtime/sessions", {
@@ -104,12 +53,31 @@ export class SessionManager {
             prefix_padding_ms: 300,
             create_response: true
           },
-
           tools: [
             {
               type: "function",
+              name: "perform_search",
+              description: "Search for real-time information using Perplexity Sonar API. Before calling this function, always inform the user with a message like 'Let me search for that information. This may take a moment...' Use this when you need to find current information or answer questions about recent events.",
+              parameters: {
+                type: "object",
+                properties: {
+                  query: {
+                    type: "string",
+                    description: "The search query to find information about"
+                  },
+                  model: {
+                    type: "string",
+                    enum: ["sonar-pro", "sonar"],
+                    description: "The model to use for search. sonar-pro provides more detailed results with multiple searches."
+                  }
+                },
+                required: ["query"]
+              }
+            },
+            {
+              type: "function",
               name: "perform_multiple_tasks",
-              description: "This tool allows you to check weather information and control home devices. You can combine multiple actions in a single request.",
+              description: "This tool allows you to check weather information and control home devices. Before calling this function, inform the user with a message like 'I'll check that information for you...' You can combine multiple actions in a single request.",
               parameters: {
                 type: "object",
                 properties: {
@@ -201,13 +169,19 @@ Capabilities:
    - Set Chill scene in any room
    - If no room is specified, use ${this.config.defaultRoom} as the default
 
-3. Weather Information:
+3. Real-time Information:
+   - Search for current information using perform_search
+   - Get real-time answers about recent events
+   - Find up-to-date facts and news
+   - Use sonar-pro for detailed research
+
+4. Weather Information:
    - Check weather for any location
    - Get temperature, conditions, humidity, and wind speed
    - Choose between Celsius and Fahrenheit
    - Defaults to Fahrenheit if not specified
 
-4. Continuous Mode:
+5. Continuous Mode:
    - Activated by phrases like:
      * "lets keep talking"
      * "Can we have a conversation"

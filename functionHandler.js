@@ -6,12 +6,14 @@
  */
 
 import WebSocket from 'ws';
+import { SearchAPI } from './functions/search.js';
 
 export class FunctionHandler {
   constructor(chat) {
     // Keep a reference to the chat so we can access
     // chat.weatherAPI, chat.pushoverAPI, chat.ws, etc.
     this.chat = chat;
+    this.searchAPI = new SearchAPI();
   }
 
   // Helper function to create a delay
@@ -33,6 +35,11 @@ export class FunctionHandler {
 
     try {
       switch (functionName) {
+        case 'perform_search':
+          const searchResponse = await this.searchAPI.performSearch(args);
+          this.sendFunctionResult(functionName, searchResponse, args._call_id);
+          break;
+
         case 'perform_multiple_tasks':
           /**
            * We can have arrays of weather requests and home requests.
@@ -81,38 +88,7 @@ export class FunctionHandler {
           this.sendFunctionResult(functionName, result, args._call_id);
           break;
 
-        // === ADDED CASE: time_and_timer ===
-        case 'time_and_timer':
-          // We’ll build a separate result structure for time/timer
-          result = {
-            success: true,
-            message: "",
-            current_time: null,
-            timer_scheduled: false
-          };
-
-          // If the user wants the current time
-          if (args.request_time) {
-            const now = new Date();
-            const timeOnly = now.toLocaleTimeString('en-US', {
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true
-            });
-            result.current_time = timeOnly;
-            result.message = `It's ${timeOnly}.`;
-          }
-
-          // If the user wants to set a timer
-          if (args.set_timer && args.duration_seconds > 0) {
-            this.scheduleTimer(args.duration_seconds, args._call_id);
-            result.timer_scheduled = true;
-            result.message += ` A timer for ${args.duration_seconds} seconds has started.`;
-          }
-
-          console.log('[Function Handler] Result:', JSON.stringify(result, null, 2));
-          this.sendFunctionResult(functionName, result, args._call_id);
-          break;
+        
 
         case 'set_continuous_mode':
           this.handleSetContinuousMode(args);
@@ -180,52 +156,6 @@ export class FunctionHandler {
     } else {
       console.error('[Function Response] WebSocket not ready, state:', this.chat.ws?.readyState);
     }
-  }
-
-  // === ADDED scheduleTimer() HELPER METHOD ===
-  scheduleTimer(durationSeconds, callId) {
-    setTimeout(() => {
-      const outputEvent = {
-        type: 'conversation.item.create',
-        item: {
-          type: 'function_call_output',
-          call_id: callId,
-          output: JSON.stringify({
-            timer_expired: true,
-            message: `Timer for ${durationSeconds} seconds has expired!`
-          })
-        }
-      };
-
-      const responseEvent = {
-        type: 'response.create',
-        response: {
-          input: [{
-            type: 'message',
-            role: 'user',
-            content: [{
-              type: 'input_text',
-              text: ` The timer for ${durationSeconds} seconds just ended. Summarize the event in a friendly manner.`
-            }]
-          }]
-        }
-      };
-
-      if (this.chat.ws && this.chat.ws.readyState === WebSocket.OPEN) {
-        try {
-          // First, send the function_call_output
-          this.chat.ws.send(JSON.stringify(outputEvent));
-          // Then have the assistant speak the outcome
-          setTimeout(() => {
-            if (this.chat.ws && this.chat.ws.readyState === WebSocket.OPEN) {
-              this.chat.ws.send(JSON.stringify(responseEvent));
-            }
-          }, 500);
-        } catch (error) {
-          console.error('[Timer] Error sending timer expiration:', error);
-        }
-      }
-    }, durationSeconds * 1000);
   }
 
   /**
