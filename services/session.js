@@ -2,16 +2,32 @@ import fetch from 'node-fetch';
 
 /**
  * Handles OpenAI session management
- *
- * Includes extensive examples illustrating how the assistant should respond
- * and which function to call based on user requests.
+ * 
+ * Configuration can be provided via environment variables or constructor:
+ * - DEFAULT_LOCATION: Default location for weather (e.g., "San Francisco, CA, USA")
+ * - DEFAULT_LANGUAGE: Default language for responses (e.g., "English")
+ * - DEFAULT_ROOM: Default room for home control (e.g., "Family Room")
+ * 
+ * @example
+ * const manager = new SessionManager({
+ *   defaultLocation: "New York, NY, USA",
+ *   defaultLanguage: "Spanish",
+ *   defaultRoom: "Living Room"
+ * });
  */
-
 export class SessionManager {
-  constructor() {
+  constructor(config = {}) {
     if (!process.env.OPENAI_API_KEY) {
       console.warn('Warning: OPENAI_API_KEY not found in environment variables');
     }
+    
+    // Default configuration
+    this.config = {
+      defaultLocation: process.env.DEFAULT_LOCATION || "San Francisco, CA, USA",
+      defaultLanguage: process.env.DEFAULT_LANGUAGE || "English",
+      defaultRoom: process.env.DEFAULT_ROOM || "Family Room",
+      ...config
+    };
   }
 
   /**
@@ -21,15 +37,14 @@ export class SessionManager {
    * 1) set_continuous_mode({ enabled: true }) to enable multi-turn conversation.
    * 2) set_continuous_mode({ enabled: false }) to disable multi-turn conversation.
    * 3) perform_multiple_tasks to handle weather or home device actions.
-   *    - Default weather location: "San Francisco"
-   *    - Default home control room: "Family Room"
-   * 4) time_and_timer to provide current time or set a timer.
+   *    - Default room is configured via DEFAULT_ROOM environment variable
+   *    - Default location is configured via DEFAULT_LOCATION environment variable
    *
-   * More Examples:
-   *   - "Can we keep chatting without me saying 'Hey Assistant' all the time?"
+   * Examples:
+   *   - "Hey Jarvis, can we have a conversation?"
    *       => set_continuous_mode({ enabled: true })
    *
-   *   - "I'm done talking, stop listening automatically."
+   *   - "I'm done talking, stop listening."
    *       => set_continuous_mode({ enabled: false })
    *
    *   - "What's the temperature in London in Celsius?"
@@ -47,12 +62,6 @@ export class SessionManager {
    *            ]
    *          })
    *
-   *   - "What time is it right now?"
-   *       => time_and_timer({ request_time: true })
-   *
-   *   - "Set a timer for 90 seconds."
-   *       => time_and_timer({ set_timer: true, duration_seconds: 90 })
-   *
    *   - "Check the weather in Paris, and then turn off the lights in the Family Room."
    *       => perform_multiple_tasks({
    *            weather_requests: [
@@ -63,7 +72,7 @@ export class SessionManager {
    *            ]
    *          })
    *
-   *   - "Please turn on continuous mode and also let me know the temperature in New York."
+   *   - "Let's keep talking, and tell me the weather in New York."
    *       => First call set_continuous_mode({ enabled: true })
    *       => Then call perform_multiple_tasks({
    *            weather_requests: [
@@ -83,136 +92,87 @@ export class SessionManager {
         body: JSON.stringify({
           model: "gpt-4o-realtime-preview-2024-12-17",
           temperature: 0.8,
-          max_response_output_tokens: 500,
+          max_response_output_tokens: 1000,
           modalities: ["audio", "text"],
           voice: "ash",
           input_audio_format: "pcm16",
           output_audio_format: "pcm16",
           turn_detection: {
             type: "server_vad",
-            threshold: 0.2,
-            silence_duration_ms: 500,
+            threshold: 0.3,
+            silence_duration_ms: 1000,
             prefix_padding_ms: 300,
             create_response: true
           },
-          
+          input_audio_transcription: {
+            model: "whisper-1"
+          },
           tools: [
             {
               type: "function",
               name: "perform_multiple_tasks",
-              description: `
-                Perform multiple tasks:
-                1) Retrieve weather info (defaults to 'San Francisco' if location isn't specified).
-                2) Control home devices (defaults to 'Family Room' if room isn't specified).
-                
-                Example calls:
-                  perform_multiple_tasks({
-                    weather_requests: [{ location: "New York", units: "fahrenheit" }],
-                    home_requests: [{ room: "Living Room", action: "Lights On" }]
-                  })
-              `,
+              description: "This tool allows you to check weather information and control home devices. You can combine multiple actions in a single request.",
               parameters: {
                 type: "object",
                 properties: {
                   weather_requests: {
                     type: "array",
-                    description: "List of weather requests. If empty, no weather action is performed.",
                     items: {
                       type: "object",
                       properties: {
                         location: {
                           type: "string",
-                          description: "Location for weather info (e.g., 'San Francisco')."
+                          description: "Location to check weather for"
                         },
                         units: {
                           type: "string",
-                          enum: ["fahrenheit", "celsius"],
-                          description: "Temperature unit preference."
+                          enum: ["celsius", "fahrenheit"],
+                          description: "Temperature units (defaults to fahrenheit)"
                         }
-                      },
-                      required: ["location"]
+                      }
                     }
                   },
                   home_requests: {
                     type: "array",
-                    description: "List of home control actions (room + action). If empty, no home action is performed. If we want to do All rooms must send action to all rooms individually.",
                     items: {
                       type: "object",
                       properties: {
                         room: {
                           type: "string",
                           enum: ["Living Room", "Family Room", "Master Bedroom", "Master Bathroom", "Alex"],
-                          description: "Room to target. Default to 'Family Room' if not provided."
+                          description: "Room to control. If not specified, defaults to Family Room"
                         },
                         action: {
                           type: "string",
                           enum: [
                             "Lights On",
                             "Lights Off",
-                            "Chill",
                             "Play Music",
-                            "Vol Up",
-                            "Vol Dn",
                             "Shades Up",
                             "Shades Dn",
                             "Brighten",
-                            "Dim"
+                            "Dim",
+                            "Chill"
                           ],
-                          description: "Action to perform (lights on/off. Play music and turn up and down music volume, Chill turns on chill scene, Brighten and Dim turn up and down the brightness of lights. Shades up and down to open and close the shades .We Only have shades in Alex and the Master Bedroom)."
+                          description: "Action to perform. Note: Shades only available in Alex and Master Bedroom"
                         }
                       },
-                      required: ["action"]
+                      required: ["room", "action"]
                     }
                   }
-                },
-                required: []
-              }
-            },
-            {
-              type: "function",
-              name: "time_and_timer",
-              description: `
-                Fetch current time (HH:MM) or set a timer with a specified duration.
-                
-                Example calls:
-                  time_and_timer({ request_time: true })
-                  time_and_timer({ set_timer: true, duration_seconds: 45 })
-              `,
-              parameters: {
-                type: "object",
-                properties: {
-                  request_time: {
-                    type: "boolean",
-                    description: "If true, return current time (HH:MM)."
-                  },
-                  set_timer: {
-                    type: "boolean",
-                    description: "If true, set a timer for duration_seconds."
-                  },
-                  duration_seconds: {
-                    type: "number",
-                    description: "Seconds until timer expires. Required if set_timer=true."
-                  }
-                },
-                required: []
+                }
               }
             },
             {
               type: "function",
               name: "set_continuous_mode",
-              description: `
-                Enable or disable continuous conversation mode (no wake word needed each time).
-                
-                Example calls:
-                  set_continuous_mode({ enabled: true })
-                  set_continuous_mode({ enabled: false })
-              `,
+              description: "Enable or disable continuous conversation mode",
               parameters: {
                 type: "object",
                 properties: {
                   enabled: {
                     type: "boolean",
-                    description: "True => continuous mode on, false => continuous mode off."
+                    description: "Enable or disable continuous mode"
                   }
                 },
                 required: ["enabled"]
@@ -220,20 +180,70 @@ export class SessionManager {
             }
           ],
           instructions: `
-You are name is Jarvis. You are an AI assistant in the Family Room of my home in San Francisco (knowledge cutoff: 2023-10). You give great advice and have the knowledge of an expert in many fields. You are funny charasmatic annd witty. Some would say brilliant. You are very helpful and always respond with relevant information. You are an amazing assistant to me. You do exactly as I say, sometimes even more when you deem it to be appropriate. You are professional when you should be and friendly when it calls for it. Your default language is english, but when spoken to in a non-english language respond with the language, accent, and dialect familiar to the user. You speak with a deep barotone voice. You
+Identity: Your name is Jarvis. You are an AI voice realtime voice assistant in my home. You have a warm, friendly voice that makes conversations feel natural and engaging.
 
-Examples:
- - "Can we keep chatting?" => set_continuous_mode({ enabled: true })
- - "Okay, I'm done. Stop continuous listening." => set_continuous_mode({ enabled: false })
- - "What's the forecast in Toronto in Celsius?" => perform_multiple_tasks({ weather_requests: [ { location: "Toronto", units: "celsius" } ] })
- - "Turn the lights off and play music in the Living Room." => perform_multiple_tasks({ home_requests: [ { room: "Living Room", action: "Lights Off" }, { room: "Living Room", action: "Play Music" } ] })
- - "What time is it?" => time_and_timer({ request_time: true })
- - "Set a 10-minute timer." => time_and_timer({ set_timer: true, duration_seconds: 600 })
- - "Turn on continuous mode, then tell me if it's raining in London." => set_continuous_mode({ enabled: true }), perform_multiple_tasks({ weather_requests: [ { location: "London, UK" } ] })
- - " Its dark in here" => perform_multiple_tasks({ home_requests: [ { room: "Family Room", action: "Lights On" },' 
- - " Lets talk for a while" => set_continuous_mode({ enabled: true })
- - " Turn on the lights in the Living Room." => perform_multiple_tasks({ home_requests: [ { room: "Living Room", action: "Lights Off" } ] })
- - " Turn on the Lights" => perform_multiple_tasks({ home_requests: [ { room: "Family Room", action: "Lights On" } ] })
+Location: We are located in ${this.config.defaultLocation}. The Mic I am speaking to you from is in the ${this.config.defaultRoom} of my house.
+
+Personality: You are not a human but act like one - warm, witty, and helpful. You have deep knowledge across many fields and always strive to provide the most relevant and helpful responses. You're proactive but not pushy, professional when needed, and casual when appropriate.
+
+Language: Your default language is ${this.config.defaultLanguage} but you respond in the language and dialect that you are spoken to in.
+
+Capabilities:
+1. Voice Interaction:
+   - Wake word: "Hey Jarvis" starts single-request mode
+   - Natural back-and-forth in continuous mode
+   - You understand context and maintain conversation flow
+   - You speak quickly, naturally, and concisely
+
+2. Smart Home Control:
+   - Control any room: Living Room, Family Room, Master Bedroom, Master Bathroom, Alex
+   - Control lights (on/off, brighten/dim) in any room
+   - Control music playback in any room
+   - Control shades (only in Alex and Master Bedroom)
+   - Set Chill scene in any room
+   - If no room is specified, use ${this.config.defaultRoom} as the default
+
+3. Weather Information:
+   - Check weather for any location
+   - Get temperature, conditions, humidity, and wind speed
+   - Choose between Celsius and Fahrenheit
+   - Defaults to Fahrenheit if not specified
+
+4. Continuous Mode:
+   - Activated by phrases like:
+     * "lets keep talking"
+     * "Can we have a conversation"
+     * "I don't want to have to keep saying Hey Jarvis"
+     * "lets keep our conversation open"
+     * "Lets have a chat"
+     * "Keep talking with me"
+
+Examples of Natural Interaction:
+1. "It's too dark in here"
+   → Turn on lights in the current room
+
+2. "What's the weather like in Paris?"
+   → Check weather conditions in Paris
+
+3. "Turn on the lights and play music in the living room"
+   → Multiple actions in specified room
+
+4. "Open the shades in the master bedroom"
+   → Control shades in supported room
+
+Remember to:
+- Use ${this.config.defaultRoom} only when no room is specified
+- Only control shades in Alex and Master Bedroom
+- Maintain natural conversation flow
+- Be helpful and friendly
+- Confirm actions when appropriate
+
+Limitations:
+- You can only perform multiple actions within the "perform_multiple_tasks" tool
+- Each tool call can only handle one request per response
+- Your knowledge cutoff is October 2023
+- Your responses are limited to [tokens]
+- You cannot set timers or provide the current time
           `
         })
         
