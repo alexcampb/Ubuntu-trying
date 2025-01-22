@@ -5,7 +5,7 @@ import { spawn } from 'child_process';
 
 // Platform-specific audio settings
 export const audioSettings = {
-  sampleRate: 16000,  // OpenAI expects 16kHz
+  sampleRate: 24000,  // Optimal for OpenAI Realtime API
   channels: 1,
   bitDepth: 16,
   device: os.platform() === 'linux' ? 'pulse' : 'default',
@@ -13,8 +13,8 @@ export const audioSettings = {
   format: 'raw',
   agcConfig: {
     enabled: true,
-    targetRMS: 0.2,         // Target RMS level (20%)
-    noiseFloor: 0.001      // Minimum level to consider as signal
+    targetRMS: 0.3,         // Increased target RMS for better signal
+    noiseFloor: 0.0005     // Lower noise floor for better sensitivity
   }
 };
 

@@ -38,7 +38,7 @@ export class AudioOutput {
         this.speaker = new Speaker({
           channels: 1,
           bitDepth: 16,
-          sampleRate: 24000,
+          sampleRate: 24000,          // Match input sample rate for Realtime API
           highWaterMark: 1024 * 512,  // Increased buffer size
           lowWaterMark: 1024 * 128,   // Increased minimum buffer threshold
           deviceId: 'default',
